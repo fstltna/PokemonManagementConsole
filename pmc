@@ -65,8 +65,7 @@ sub MainMenu
                                       '4', 'Turn Off Respawn',
                                       '5', 'Turn Respawn On',
                                       '6', 'Edit server.cfg',
-                                      '7', 'Edit world.cfg',
-                                      '8', 'Run a Backup',
+                                      '7', 'Run a Backup',
                                       'q', 'Quit PMC' ] );
 }
 
@@ -110,15 +109,10 @@ while (-1)
 	}
 	elsif ($menuselection eq "6")
 	{
-		# Edit server.cfg file
-		system("$FileEditor $POKEMONONLINEDIR/dat/server.cfg");
+		# Edit server config file
+		system("$FileEditor $POKEMONONLINEDIR/bin/config");
 	}
 	elsif ($menuselection eq "7")
-	{
-		# Edit world.cfg file
-		system("$FileEditor $POKEMONONLINEDIR/dat/default/world.cfg");
-	}
-	elsif ($menuselection eq "8")
 	{
 		# Run a backup
 		system("$BackupCommand");
