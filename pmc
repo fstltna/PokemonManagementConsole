@@ -1,0 +1,128 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use UI::Dialog;
+use Term::ReadKey;
+use Term::ANSIScreen qw(cls);
+
+my $FileEditor = "/bin/nano";
+my $InitDName = "/etc/init.d/pokemononline";
+my $POKEMONONLINEDIR = "/root/pokemon-online";
+my $BackupCommand = "/root/PokemonBackup/pokemonbackup.pl";
+
+###################################################
+# No changes below here
+###################################################
+
+my $MMC_ver = "1.0.0";
+my $ServerStatus = "foo";
+
+my $d = new UI::Dialog ( backtitle => "Pokemon Online Management Console v$MMC_ver", height => 20, width => 65, listheight => 5,
+	order => [ 'ascii', 'cdialog', 'xdialog' ]);
+
+my $windowtitle = "Welcome to the Pokemon Online Management Console!";
+my $enjoyedtitle = "We hope you enjoyed using PMC!";
+my $introtext =
+"This is the Pokemon Online Management Console, a utility for Pokemon Online operators to manage their servers from a text GUI rather than the command line.";
+
+$d->msgbox( title => $windowtitle, text => $introtext );
+
+if (($d->state() eq "ESC") || ($d->state() eq "CANCEL"))
+{
+	exit 0;
+}
+
+my $menuselection = "";
+
+sub CheckServerStatus
+{
+	my $running=`ps ax|grep "./Server --headless"|grep -v grep`;
+	if ($running ne "")
+	{
+		$ServerStatus = "Running";
+	}
+	else
+	{
+		$ServerStatus = "Stopped";
+	}
+
+}
+
+sub MainMenu
+{
+	my $WantRespawn="ON";
+	CheckServerStatus();
+	if (-f "$POKEMONONLINEDIR/nostart")
+	{
+		$WantRespawn="OFF";
+	}
+
+	$menuselection = $d->menu( title => "Main Menu", text => "Server is $ServerStatus and respawn is $WantRespawn - Select one:",
+                            list => [ '1', 'Start Server',
+                                      '2', 'Stop Server',
+                                      '3', 'Server Console',
+                                      '4', 'Turn Off Respawn',
+                                      '5', 'Turn Respawn On',
+                                      '6', 'Edit server.cfg',
+                                      '7', 'Edit world.cfg',
+                                      '8', 'Run a Backup',
+                                      'q', 'Quit PMC' ] );
+}
+
+while (-1)
+{
+	MainMenu();
+	if (($menuselection eq "CANCEL") || ($menuselection eq "ESC") || ($menuselection eq "") || ($menuselection eq "q") || ($menuselection eq "Q"))
+	{
+		$d->msgbox( title => $enjoyedtitle, text => "Thanks for using PMC..." );
+		exit 0;
+	}
+	if ($menuselection eq "1")
+	{
+		system("$InitDName start");
+	}
+	elsif ($menuselection eq "2")
+	{
+		if ($d->yesno( text => "Confirm stopping the server", text => "Are you sure you want to shut down the server?" ))
+		{
+			system("$InitDName stop");
+			sleep(5);
+		}
+	}
+	elsif ($menuselection eq "3")
+	{
+		$d->msgbox( text => "To exit the Pokemon Online console and return to PMC press CTRL-A CTRL-D" );
+		system("screen -r");
+	}
+	elsif ($menuselection eq "4")
+	{
+		# Turn off respawn
+		system("touch $POKEMONONLINEDIR/nostart");
+	}
+	elsif ($menuselection eq "5")
+	{
+		# Turn respawn back on
+		if (-f "$POKEMONONLINEDIR/nostart")
+		{
+			unlink("$POKEMONONLINEDIR/nostart");
+		}
+	}
+	elsif ($menuselection eq "6")
+	{
+		# Edit server.cfg file
+		system("$FileEditor $POKEMONONLINEDIR/dat/server.cfg");
+	}
+	elsif ($menuselection eq "7")
+	{
+		# Edit world.cfg file
+		system("$FileEditor $POKEMONONLINEDIR/dat/default/world.cfg");
+	}
+	elsif ($menuselection eq "8")
+	{
+		# Run a backup
+		system("$BackupCommand");
+	}
+}
+
+exit 0;
