@@ -37,7 +37,7 @@ my $menuselection = "";
 
 sub CheckServerStatus
 {
-	my $running=`ps ax|grep "./Server --headless"|grep -v grep`;
+	my $running=`ps ax|grep "./Server -H"|grep -v grep`;
 	if ($running ne "")
 	{
 		$ServerStatus = "Running";
